@@ -11,6 +11,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
@@ -24,7 +25,7 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import me.neznamy.tab.bridge.config.YamlConfigurationFile;
 import net.milkbowl.vault.permission.Permission;
 
-public class Main extends JavaPlugin implements PluginMessageListener {
+public class Main extends JavaPlugin implements PluginMessageListener, Listener {
 
 	private final String CHANNEL_NAME = "tab:placeholders";
 	private final String ADDON_CHANNEL_NAME = "tabadditions:channel";
@@ -49,6 +50,12 @@ public class Main extends JavaPlugin implements PluginMessageListener {
 			expansionDownloading = config.getBoolean("automatic-expansion-downloading", true);
 			exceptionThrowing = config.getBoolean("throw-placeholderapi-exceptions", false);
 			Bukkit.getConsoleSender().sendMessage("\u00a7a[TAB-BukkitBridge] Enabled in " + (System.currentTimeMillis()-time) + "ms");
+			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+				expansion = new BTABExpansion(this);
+				expansion.register();
+			}
+			if (config.getBoolean("chat"))
+				Bukkit.getServer().getPluginManager().registerEvents(this,this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
