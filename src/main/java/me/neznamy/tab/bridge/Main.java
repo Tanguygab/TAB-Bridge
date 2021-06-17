@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.bukkit.potion.PotionEffectType;
@@ -54,7 +55,7 @@ public class Main extends JavaPlugin implements PluginMessageListener, Listener 
 				expansion = new BTABExpansion(this);
 				expansion.register();
 			}
-			if (config.getBoolean("chat"))
+			if (config.getBoolean("chat",false))
 				Bukkit.getServer().getPluginManager().registerEvents(this,this);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -180,7 +181,9 @@ public class Main extends JavaPlugin implements PluginMessageListener, Listener 
 				if (vanished) return true;
 			}
 			if (p.hasMetadata("vanished") && !p.getMetadata("vanished").isEmpty()) {
-				return p.getMetadata("vanished").get(0).asBoolean();
+				for (MetadataValue meta : p.getMetadata("vanished")) {
+					if (meta.asBoolean()) return true;
+				}
 			}
 		} catch (Exception e) {
 			Bukkit.getConsoleSender().sendMessage("[TAB-BukkitBridge] Failed to get vanish status of " + p.getName());
