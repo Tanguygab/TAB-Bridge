@@ -10,18 +10,22 @@ import me.neznamy.tab.bridge.shared.config.YamlConfigurationFile;
 
 public abstract class DataBridge {
 
-	private YamlConfigurationFile config;
+	protected YamlConfigurationFile config;
 	protected boolean exceptionThrowing;
-	
+	protected boolean chat;
+	public String loading;
+
 	protected void loadConfig() {
 		try {
 			config = new YamlConfigurationFile(getClass().getClassLoader().getResourceAsStream("config.yml"), new File(getDataFolder(), "config.yml"));
 			exceptionThrowing = config.getBoolean("throw-placeholderapi-exceptions", false);
+			chat = config.getBoolean("chat", false);
+			loading = config.getString("placeholders-loading-msg","Loading...");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public abstract File getDataFolder();
 	
 	public abstract boolean isDisguised(Object player);

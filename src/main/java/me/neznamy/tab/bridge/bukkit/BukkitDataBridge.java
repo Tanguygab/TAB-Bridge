@@ -6,7 +6,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.Plugin;
@@ -136,4 +138,16 @@ public class BukkitDataBridge extends DataBridge implements Listener {
 	public boolean hasInvisibilityPotion(Object player) {
 		return ((Player)player).hasPotionEffect(PotionEffectType.INVISIBILITY);
 	}
+
+
+	@EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
+	public void onChat(AsyncPlayerChatEvent e) {
+		if (!chat) return;
+		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		out.writeUTF("Chat");
+		out.writeUTF(e.getMessage());
+		e.getPlayer().sendPluginMessage(plugin, BukkitBridge.ADDON_CHANNEL_NAME,out.toByteArray());
+		e.setCancelled(true);
+	}
+
 }
