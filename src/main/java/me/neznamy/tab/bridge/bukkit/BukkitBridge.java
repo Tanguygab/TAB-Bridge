@@ -2,8 +2,10 @@ package me.neznamy.tab.bridge.bukkit;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import github.scarsz.discordsrv.DiscordSRV;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
@@ -55,6 +57,13 @@ public class BukkitBridge extends JavaPlugin implements PluginMessageListener {
 			map = expansion.properties.get(player);
 			map.put(property,value);
 			expansion.properties.put(player,map);
+		}
+		if (subChannel.equalsIgnoreCase("DiscordSRV")) {
+			String msg = in.readUTF();
+			String channel = in.readUTF();
+			Plugin discordsrv = getServer().getPluginManager().getPlugin("DiscordSRV");
+			if (discordsrv != null)
+				DiscordSRV.getPlugin().processChatMessage(player, msg, channel, false);
 		}
 	}
 }

@@ -46,6 +46,18 @@
 			<url>https://repo.spongepowered.org/maven</url>
 		</repository>
 
+		<!-- DiscordSRV -->
+		<repository>
+			<id>dv8tion</id>
+			<name>m2-dv8tion</name>
+			<url>https://m2.dv8tion.net/releases</url>
+		</repository>
+		<repository>
+			<id>Scarsz-Nexus</id>
+			<url>https://nexus.scarsz.me/content/groups/public/</url>
+		</repository>
+
+
 	</repositories>
 
 	<dependencies>
@@ -90,6 +102,14 @@
 			<groupId>com.github.rojo8399</groupId>
 			<artifactId>PlaceholderAPI</artifactId>
 			<version>master-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- DiscordSRV -->
+		<dependency>
+			<groupId>com.discordsrv</groupId>
+			<artifactId>discordsrv</artifactId>
+			<version>1.24.0</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -172,5 +192,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 	</dependencies>
 </project>
