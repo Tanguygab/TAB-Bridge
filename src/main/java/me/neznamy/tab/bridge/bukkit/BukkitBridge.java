@@ -61,9 +61,15 @@ public class BukkitBridge extends JavaPlugin implements PluginMessageListener {
 		if (subChannel.equalsIgnoreCase("DiscordSRV")) {
 			String msg = in.readUTF();
 			String channel = in.readUTF();
-			Plugin discordsrv = getServer().getPluginManager().getPlugin("DiscordSRV");
-			if (discordsrv != null)
-				DiscordSRV.getPlugin().processChatMessage(player, msg, channel, false);
+			String viewCondition = in.readUTF();
+
+			if (!getServer().getPluginManager().isPluginEnabled("DiscordSRV")) return;
+
+			DiscordSRV discord = DiscordSRV.getPlugin();
+			if (!Boolean.parseBoolean(viewCondition))
+				discord.processChatMessage(player, msg, discord.getMainChatChannel(), false);
+			else if (!discord.getOptionalChannel(channel).equals(discord.getMainChatChannel()))
+				discord.processChatMessage(player, msg, discord.getOptionalChannel(channel), false);
 		}
 	}
 }
