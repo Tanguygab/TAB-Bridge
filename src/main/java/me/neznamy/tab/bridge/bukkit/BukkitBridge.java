@@ -1,5 +1,7 @@
 package me.neznamy.tab.bridge.bukkit;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,8 +12,10 @@ import me.neznamy.tab.bridge.bukkit.nms.NMSStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
@@ -27,16 +31,21 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BukkitBridge extends JavaPlugin implements PluginMessageListener, Listener {
 
 	public static final String CHANNEL_NAME = "tab:bridge-2";
+	public static final String ADDON_CHANNEL_NAME = "tabadditions:channel";
 	public static BukkitBridge instance;
 
 	private DataBridge data;
 	private PetFix petFix;
 	public BridgeNameTagX nametagx;
 
+	private boolean chat = false;
+
 	private final Map<Player, BridgePlayer> players = new ConcurrentHashMap<>();
 	
 	public void onEnable() {
 		instance = this;
+		saveDefaultConfig();
+		chat = getConfig().getBoolean("chat",false);
 		try {
 			NMSStorage.setInstance(new NMSStorage());
 			if (NMSStorage.getInstance().getMinorVersion() >= 9) petFix = new PetFix();
@@ -46,6 +55,10 @@ public class BukkitBridge extends JavaPlugin implements PluginMessageListener, L
 		nametagx = new BridgeNameTagX();
 		Bukkit.getMessenger().registerIncomingPluginChannel(this, CHANNEL_NAME, this);
 		Bukkit.getMessenger().registerOutgoingPluginChannel(this, CHANNEL_NAME);
+
+		Bukkit.getMessenger().registerIncomingPluginChannel(this, ADDON_CHANNEL_NAME, this);
+		Bukkit.getMessenger().registerOutgoingPluginChannel(this, ADDON_CHANNEL_NAME);
+
 		Bukkit.getPluginManager().registerEvents(this, this);
 		data = new DataBridge(this);
 		for (Player p : Bukkit.getOnlinePlayers()) {
@@ -74,13 +87,26 @@ public class BukkitBridge extends JavaPlugin implements PluginMessageListener, L
 		if (NMSStorage.getInstance() != null) nametagx.onQuit(players.get(e.getPlayer()));
 		players.remove(e.getPlayer());
 	}
+
+	@EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
+	public void onChat(AsyncPlayerChatEvent e) {
+		if (chat) return;
+
+		ByteArrayDataOutput out = ByteStreams.newDataOutput();
+		out.writeUTF("Chat");
+		out.writeUTF(e.getMessage());
+		e.getPlayer().sendPluginMessage(this, BukkitBridge.ADDON_CHANNEL_NAME,out.toByteArray());
+		e.setCancelled(true);
+	}
 	
 	@Override
 	public void onPluginMessageReceived(String channel, @NotNull Player player, byte[] bytes){
-		if (!channel.equals(CHANNEL_NAME)) return;
+		if (!channel.equals(CHANNEL_NAME) && !channel.equals(ADDON_CHANNEL_NAME)) return;
 		data.submitTask(() -> {
 			try {
-				data.processPluginMessage(player, bytes);
+				if (channel.equals(ADDON_CHANNEL_NAME))
+					data.processAddonPluginMessage(player, bytes);
+				else data.processPluginMessage(player, bytes);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

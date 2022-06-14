@@ -4,6 +4,7 @@ import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import github.scarsz.discordsrv.DiscordSRV;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.neznamy.tab.bridge.bukkit.features.BridgeTabExpansion;
 import me.neznamy.tab.bridge.shared.placeholder.Placeholder;
@@ -149,6 +150,23 @@ public class DataBridge implements Listener {
 		}
 		if (subChannel.equals("Expansion")) {
 			expansion.setValue(BukkitBridge.getInstance().getPlayer(player), in.readUTF(), in.readUTF());
+		}
+	}
+	public void processAddonPluginMessage(Player player, byte[] bytes) {
+		ByteArrayDataInput in = ByteStreams.newDataInput(bytes);
+		String subChannel = in.readUTF();
+		if (subChannel.equalsIgnoreCase("DiscordSRV")) {
+			String msg = in.readUTF();
+			String channel = in.readUTF();
+			String viewCondition = in.readUTF();
+
+			if (!Bukkit.getServer().getPluginManager().isPluginEnabled("DiscordSRV")) return;
+
+			DiscordSRV discord = DiscordSRV.getPlugin();
+			if (!Boolean.parseBoolean(viewCondition))
+				discord.processChatMessage(player, msg, discord.getMainChatChannel(), false);
+			else if (!discord.getOptionalChannel(channel).equals(discord.getMainChatChannel()))
+				discord.processChatMessage(player, msg, discord.getOptionalChannel(channel), false);
 		}
 	}
 
