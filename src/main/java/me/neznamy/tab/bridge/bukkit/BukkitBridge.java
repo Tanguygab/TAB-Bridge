@@ -90,7 +90,7 @@ public class BukkitBridge extends JavaPlugin implements PluginMessageListener, L
 
 	@EventHandler(ignoreCancelled = true,priority = EventPriority.HIGHEST)
 	public void onChat(AsyncPlayerChatEvent e) {
-		if (chat) return;
+		if (!chat) return;
 
 		ByteArrayDataOutput out = ByteStreams.newDataOutput();
 		out.writeUTF("Chat");
